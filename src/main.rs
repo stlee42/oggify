@@ -107,7 +107,7 @@ fn main() {
             AudioDecrypt::new(key, &buffer[..]).read_to_end(&mut decrypted_buffer).expect("Cannot decrypt stream");
             if args.len() == 3 {
                 let album = core.run(Album::get(&session, track.album)).expect("Cannot get album metadata");
-                let fname = format!("{} --- {} --- {} --- {}.ogg", track.id.to_base62(), artists_strs.join(", "), track.name, album.name).to_string().replace("/"," ");
+                let fname = format!("{} --- {} --- {} --- {}.ogg", id.to_base62(), artists_strs.join(", "), track.name, album.name).to_string().replace("/"," ");
                 std::fs::write(&fname, &decrypted_buffer[0xa7..]).expect("Cannot write decrypted track");
                 info!("Filename: {}", fname);
             } else {
