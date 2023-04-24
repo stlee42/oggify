@@ -61,12 +61,26 @@ fn main() {
                 let alt_track = track.alternatives.iter().find_map(|id|{
                     let alt_track = core.run(Track::get(&session, *id)).expect("Cannot get track metadata");
                     match alt_track.available {
-                        true => Some(alt_track),
+                        true => {
+                            if alt_track.id.to_base62() == track.id.to_base62() {
+                                //warn!("ALTERNATE ID SAME");
+                                return None;
+                            }
+                            return Some(alt_track);
+                        }
                         false => None
                     }
                 });
-                track = alt_track.expect(&format!("Could not find alternative for track {}", id.to_base62()));
-                warn!("Found track alternative {} -> {}", id.to_base62(), track.id.to_base62());
+                match alt_track {
+                    Some(alt_track) => {
+                        warn!("Found track alternative {} -> {}", id.to_base62(), alt_track.id.to_base62());
+                        track = alt_track;
+                    }
+                    None => {
+                        warn!("Could not find alternative for track {}", id.to_base62());
+                        return;
+                    }
+                 }
             }
             let artists_strs: Vec<_> = track.artists.iter().map(|id|core.run(Artist::get(&session, *id)).expect("Cannot get artist metadata").name).collect();
             debug!("File formats: {}", track.files.keys().map(|filetype|format!("{:?}", filetype)).collect::<Vec<_>>().join(" "));
@@ -92,7 +106,8 @@ fn main() {
             let mut decrypted_buffer = Vec::new();
             AudioDecrypt::new(key, &buffer[..]).read_to_end(&mut decrypted_buffer).expect("Cannot decrypt stream");
             if args.len() == 3 {
-                let fname = format!("{} - {}.ogg", artists_strs.join(", "), track.name);
+                let album = core.run(Album::get(&session, track.album)).expect("Cannot get album metadata");
+                let fname = format!("{} --- {} --- {} --- {}.ogg", track.id.to_base62(), artists_strs.join(", "), track.name, album.name).to_string().replace("/"," ");
                 std::fs::write(&fname, &decrypted_buffer[0xa7..]).expect("Cannot write decrypted track");
                 info!("Filename: {}", fname);
             } else {
