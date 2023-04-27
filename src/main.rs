@@ -11,6 +11,7 @@ extern crate tokio_core;
 use std::env;
 use std::io::{self, BufRead, Read, Result};
 use std::io::Write;
+use std::path::Path;
 use std::process::{Command, Stdio};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
@@ -83,6 +84,26 @@ fn main() {
                  }
             }
             let artists_strs: Vec<_> = track.artists.iter().map(|id|core.run(Artist::get(&session, *id)).expect("Cannot get artist metadata").name).collect();
+
+
+
+
+
+
+
+            let album = core.run(Album::get(&session, track.album)).expect("Cannot get album metadata");
+            let fname = format!("{} --- {} --- {} --- {}.ogg", id.to_base62(), artists_strs.join(", "), track.name, album.name).to_string().replace("/"," ");
+
+            if Path::new(&fname).exists() {
+                info!("{} - is already downloaded", fname);
+                return;
+            }
+
+
+
+
+
+
             debug!("File formats: {}", track.files.keys().map(|filetype|format!("{:?}", filetype)).collect::<Vec<_>>().join(" "));
             let file_id = track.files.get(&FileFormat::OGG_VORBIS_320)
                 .or(track.files.get(&FileFormat::OGG_VORBIS_160))
@@ -106,8 +127,6 @@ fn main() {
             let mut decrypted_buffer = Vec::new();
             AudioDecrypt::new(key, &buffer[..]).read_to_end(&mut decrypted_buffer).expect("Cannot decrypt stream");
             if args.len() == 3 {
-                let album = core.run(Album::get(&session, track.album)).expect("Cannot get album metadata");
-                let fname = format!("{} --- {} --- {} --- {}.ogg", id.to_base62(), artists_strs.join(", "), track.name, album.name).to_string().replace("/"," ");
                 std::fs::write(&fname, &decrypted_buffer[0xa7..]).expect("Cannot write decrypted track");
                 info!("Filename: {}", fname);
             } else {
