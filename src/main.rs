@@ -130,7 +130,6 @@ fn main() {
                 std::fs::write(&fname, &decrypted_buffer[0xa7..]).expect("Cannot write decrypted track");
                 info!("Filename: {}", fname);
             } else {
-                let album = core.run(Album::get(&session, track.album)).expect("Cannot get album metadata");
                 let mut cmd = Command::new(args[3].to_owned());
                 cmd.stdin(Stdio::piped());
                 cmd.arg(id.to_base62()).arg(track.name).arg(album.name).args(artists_strs.iter());
