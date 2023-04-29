@@ -45,13 +45,15 @@ fn main() {
 
     let mut threadpool = Pool::new(1);
 
-    let spotify_uri = Regex::new(r"spotify:track:([[:alnum:]]+)").unwrap();
-    let spotify_url = Regex::new(r"open\.spotify\.com/track/([[:alnum:]]+)").unwrap();
+    let spotify_uri = Regex::new(r"^spotify:track:([[:alnum:]]{22})$").unwrap();
+    let spotify_url = Regex::new(r"^open\.spotify\.com/track/([[:alnum:]]{22})$").unwrap();
+    let spotify_id = Regex::new(r"^([[:alnum:]]{22})$").unwrap();
 
     io::stdin().lock().lines()
         .filter_map(|line|
             line.ok().and_then(|str|
                 spotify_uri.captures(&str).or(spotify_url.captures(&str))
+                    .or(spotify_id.captures(&str))
                     .or_else(|| { warn!("Cannot parse track from string {}", str); None })
                     .and_then(|capture|SpotifyId::from_base62(&capture[1]).ok())))
         .for_each(|id|{

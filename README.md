@@ -8,7 +8,9 @@ To download a number of tracks as `"artists" - "title".ogg`, run
 ```
 oggify "spotify-premium-user" "spotify-premium-password" < tracks_list
 ```
-Oggify reads from stdin and looks for a track URL or URI in each line. The two formats are those you get with the track menu items "Share->Copy Song Link" or "Share->Copy Song URI" in the Spotify client, for example `open.spotify.com/track/1xPQDRSXDN5QJWm7qHg5Ku` or `spotify:track:1xPQDRSXDN5QJWm7qHg5Ku`.
+Oggify reads from stdin and looks for a track ID in each line.
+
+You may also use track URL or URI in each line. The two formats are those you get with the track menu items "Share->Copy Song Link" or "Share->Copy Song URI" in the Spotify client, for example `open.spotify.com/track/1xPQDRSXDN5QJWm7qHg5Ku` or `spotify:track:1xPQDRSXDN5QJWm7qHg5Ku`.
 
 ## Helper script
 A second form of invocation of oggify is
@@ -28,3 +30,4 @@ for ogg in *.ogg; do
 	ffmpeg -i "$ogg" -map_metadata 0:s:0 -id3v2_version 3 -codec:a libmp3lame -qscale:a 2 "$(basename "$ogg" .ogg).mp3"
 done
 ```
+
