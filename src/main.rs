@@ -59,6 +59,7 @@ fn main() {
         .for_each(|id|{
             info!("Getting track {}...", id.to_base62());
             let mut track = core.run(Track::get(&session, id)).expect("Cannot get track metadata");
+            let orig_track = core.run(Track::get(&session, id)).expect("Cannot get track metadata");
             if !track.available {
                 warn!("Track {} is not available, finding alternative...", id.to_base62());
                 let alt_track = track.alternatives.iter().find_map(|id|{
@@ -85,7 +86,7 @@ fn main() {
                     }
                  }
             }
-            let artists_strs: Vec<_> = track.artists.iter().map(|id|core.run(Artist::get(&session, *id)).expect("Cannot get artist metadata").name).collect();
+            let artists_strs: Vec<_> = orig_track.artists.iter().map(|id|core.run(Artist::get(&session, *id)).expect("Cannot get artist metadata").name).collect();
 
 
 
@@ -93,13 +94,13 @@ fn main() {
 
 
 
-            let album = core.run(Album::get(&session, track.album)).expect("Cannot get album metadata");
+            let album = core.run(Album::get(&session, orig_track.album)).expect("Cannot get album metadata");
 
             // from
             // https://stackoverflow.com/questions/38461429/how-can-i-truncate-a-string-to-have-at-most-n-characters
 
             let max_width = 255-4;
-            let fname_minus_extension = format!("{} --- {} --- {} --- {}", id.to_base62(), artists_strs.join(", "), track.name, album.name)
+            let fname_minus_extension = format!("{} --- {} --- {} --- {}", id.to_base62(), artists_strs.join(", "), orig_track.name, album.name)
                 .chars()
                 .take(max_width)
                 .collect::<String>()
@@ -144,7 +145,7 @@ fn main() {
             } else {
                 let mut cmd = Command::new(args[3].to_owned());
                 cmd.stdin(Stdio::piped());
-                cmd.arg(id.to_base62()).arg(track.name).arg(album.name).args(artists_strs.iter());
+                cmd.arg(id.to_base62()).arg(orig_track.name).arg(album.name).args(artists_strs.iter());
                 let mut child = cmd.spawn().expect("Could not run helper program");
                 let pipe = child.stdin.as_mut().expect("Could not open helper stdin");
                 pipe.write_all(&decrypted_buffer[0xa7..]).expect("Failed to write to stdin");
