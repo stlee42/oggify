@@ -10,11 +10,11 @@ repository = "https://github.com/pisto/oggify"
 readme = "README.md"
 
 [dependencies]
-tokio-core = "0.1.17"
-librespot-core = "0.1.3"
-librespot-metadata = "0.1.3"
-librespot-audio = "0.1.3"
+tokio = { version = "1", features = ["rt","rt-multi-thread", "macros", "signal", "sync", "parking_lot", "process"] }
+librespot-core = "0.4.2"
+librespot-metadata = "0.4.2"
+librespot-audio = "0.4.2"
 regex = "1.8.1"
 log = "0.4.17"
-env_logger = "0.9.3"
+env_logger =  { version = "0.10", default-features = false, features = ["color", "humantime", "auto-color"] }
 scoped_threadpool = "0.1.9"
