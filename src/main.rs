@@ -94,7 +94,17 @@ fn main() {
 
 
             let album = core.run(Album::get(&session, track.album)).expect("Cannot get album metadata");
-            let fname = format!("{} --- {} --- {} --- {}.ogg", id.to_base62(), artists_strs.join(", "), track.name, album.name).to_string().replace("/"," ");
+
+            // from
+            // https://stackoverflow.com/questions/38461429/how-can-i-truncate-a-string-to-have-at-most-n-characters
+
+            let max_width = 255-4;
+            let fname_minus_extension = format!("{} --- {} --- {} --- {}", id.to_base62(), artists_strs.join(", "), track.name, album.name)
+                .chars()
+                .take(max_width)
+                .collect::<String>()
+                .replace("/"," ");
+            let fname = format!("{}.ogg",fname_minus_extension);
 
             if Path::new(&fname).exists() {
                 info!("{} - is already downloaded", fname);
