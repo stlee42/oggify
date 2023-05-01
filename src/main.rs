@@ -138,7 +138,7 @@ fn main() {
                 let mut cmd = Command::new(args[3].to_owned());
                 cmd.stdin(Stdio::piped());
                 cmd.arg(id.to_base62().expect("UTF8 error")).arg(orig_track.name).arg(album.name).args(artists_strs.iter());
-                let mut child = cmd.spawn().expect("Could not block_on helper program");
+                let mut child = cmd.spawn().expect("Could not run helper program");
                 let pipe = child.stdin.as_mut().expect("Could not open helper stdin");
                 pipe.write_all(&decrypted_buffer[0xa7..]).expect("Failed to write to stdin");
                 assert!(child.wait().expect("Out of ideas for error messages").success(), "Helper script returned an error");
