@@ -4,7 +4,7 @@ Download Spotify tracks to Ogg Vorbis (with a premium account).
 This library uses [librespot](https://github.com/librespot-org/librespot). It is my first program in Rust so you may see some horrors in the way I handle tokio, futures and such.
 
 # Usage
-To download a number of tracks as `"artists" - "title".ogg`, run
+To download a number of tracks as `"track_id".ogg`, run
 ```
 oggify "spotify-premium-user" "spotify-premium-password" < tracks_list
 ```

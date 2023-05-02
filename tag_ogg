@@ -2,7 +2,7 @@
 
 set -e
 
-fname="${4} - ${2}.ogg"
+fname="${1}.ogg"
 fname="${fname//\//-}"
 cat > "${fname}"
 {
