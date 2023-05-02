@@ -57,15 +57,21 @@ fn main() {
                     .and_then(|capture|SpotifyId::from_base62(&capture[1]).ok())))
         .for_each(|id|{
             info!("Getting track {}...", id.to_base62().expect("UTF8 error"));
+
+            let fname = format!("{}.ogg",id.to_base62().expect("UTF8 error"));
+            if Path::new(&fname).exists() {
+                info!("{} - is already downloaded", fname);
+                return;
+            }
+
             let mut track = core.block_on(Track::get(&session, id)).expect("Cannot get track metadata");
             let artists_strs: Vec<_> = track.artists.iter().map(|id|core.block_on(Artist::get(&session, *id)).expect("Cannot get artist metadata").name).collect();
             let album = core.block_on(Album::get(&session, track.album)).expect("Cannot get album metadata");
             let track_name = track.name.to_string();
 
+            /*
             // from
             // https://stackoverflow.com/questions/38461429/how-can-i-truncate-a-string-to-have-at-most-n-characters
-
-            /*
             let max_width = 255-4;
             let fname_minus_extension = format!("{} --- {} --- {} --- {}", id.to_base62().expect("UTF8 error"), artists_strs.join(", "), track_name, album.name)
                 .chars()
@@ -73,13 +79,12 @@ fn main() {
                 .collect::<String>()
                 .replace("/"," ");
             let fname = format!("{}.ogg",fname_minus_extension);
-            */
-            let fname = format!("{}.ogg",id.to_base62().expect("UTF8 error"));
 
             if Path::new(&fname).exists() {
                 info!("{} - is already downloaded", fname);
                 return;
             }
+            */
 
 
             if !track.available {
