@@ -144,8 +144,8 @@ fn main() {
             let track_length = time::Duration::from_millis(track.duration.try_into().unwrap());
             let sleep_for = track_length.saturating_sub(stopwatch.elapsed());
 
-            info!("Sleeping for {} seconds per rate limit ...", sleep_for.as_secs());
             if !sleep_for.is_zero() {
+                info!("Sleeping for {}.{:0>3} seconds per rate limit ...", sleep_for.as_secs(), sleep_for.subsec_millis());
                 thread::sleep(sleep_for);
             }
         });
