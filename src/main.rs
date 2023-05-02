@@ -144,6 +144,7 @@ fn main() {
 
             let four_minutes = time::Duration::from_millis(240000);
 
+            info!("Sleeping for four minutes per rate limit ...");
             thread::sleep(four_minutes);
         });
 }
