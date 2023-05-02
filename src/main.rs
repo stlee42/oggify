@@ -9,6 +9,8 @@ extern crate scoped_threadpool;
 extern crate tokio;
 
 use std::env;
+use std::{thread, time};
+use std::convert::TryInto;
 use std::io::{self, BufRead, Read, Result};
 use std::io::Write;
 use std::path::Path;
@@ -107,6 +109,7 @@ fn main() {
                  }
             }
 
+            let stopwatch = time::Instant::now();
 
             debug!("File formats: {}", track.files.keys().map(|filetype|format!("{:?}", filetype)).collect::<Vec<_>>().join(" "));
             let file_id = track.files.get(&FileFormat::OGG_VORBIS_320)
@@ -137,11 +140,13 @@ fn main() {
                 pipe.write_all(&decrypted_buffer[0xa7..]).expect("Failed to write to stdin");
                 assert!(child.wait().expect("Out of ideas for error messages").success(), "Helper script returned an error");
             }
-            use std::{thread, time};
 
-            let four_minutes = time::Duration::from_millis(240000);
+            let track_length = time::Duration::from_millis(track.duration.try_into().unwrap());
+            let sleep_for = track_length.saturating_sub(stopwatch.elapsed());
 
-            info!("Sleeping for four minutes per rate limit ...");
-            thread::sleep(four_minutes);
+            info!("Sleeping for {} seconds per rate limit ...", sleep_for.as_secs());
+            if !sleep_for.is_zero() {
+                thread::sleep(sleep_for);
+            }
         });
 }
