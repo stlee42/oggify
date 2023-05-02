@@ -60,6 +60,26 @@ fn main() {
             let album = core.block_on(Album::get(&session, track.album)).expect("Cannot get album metadata");
             let track_name = track.name.to_string();
 
+            // from
+            // https://stackoverflow.com/questions/38461429/how-can-i-truncate-a-string-to-have-at-most-n-characters
+
+            /*
+            let max_width = 255-4;
+            let fname_minus_extension = format!("{} --- {} --- {} --- {}", id.to_base62().expect("UTF8 error"), artists_strs.join(", "), track_name, album.name)
+                .chars()
+                .take(max_width)
+                .collect::<String>()
+                .replace("/"," ");
+            let fname = format!("{}.ogg",fname_minus_extension);
+            */
+            let fname = format!("{}.ogg",id.to_base62().expect("UTF8 error"));
+
+            if Path::new(&fname).exists() {
+                info!("{} - is already downloaded", fname);
+                return;
+            }
+
+
             if !track.available {
                 warn!("Track {} is not available, finding alternative...", id.to_base62().expect("UTF8 error"));
                 let alt_track = track.alternatives.iter().find_map(|id|{
@@ -86,29 +106,6 @@ fn main() {
                     }
                  }
             }
-
-            // from
-            // https://stackoverflow.com/questions/38461429/how-can-i-truncate-a-string-to-have-at-most-n-characters
-
-            /*
-            let max_width = 255-4;
-            let fname_minus_extension = format!("{} --- {} --- {} --- {}", id.to_base62().expect("UTF8 error"), artists_strs.join(", "), track_name, album.name)
-                .chars()
-                .take(max_width)
-                .collect::<String>()
-                .replace("/"," ");
-            let fname = format!("{}.ogg",fname_minus_extension);
-            */
-            let fname = format!("{}.ogg",id.to_base62().expect("UTF8 error"));
-
-            if Path::new(&fname).exists() {
-                info!("{} - is already downloaded", fname);
-                return;
-            }
-
-
-
-
 
 
             debug!("File formats: {}", track.files.keys().map(|filetype|format!("{:?}", filetype)).collect::<Vec<_>>().join(" "));
