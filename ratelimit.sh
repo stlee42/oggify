@@ -1,7 +1,0 @@
-split -l 1 trackids OGGIFY_PREFIX_
-for i in OGGIFY_PREFIX_*; do
-	oggify "$userid" "$password" < "$i"
-	echo sleeping for four minutes
-	sleep 240
-done
-rm OGGIFY_PREFIX_*
