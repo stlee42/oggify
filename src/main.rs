@@ -122,7 +122,7 @@ fn main() {
                 .expect("Could not find a OGG_VORBIS format for the track.");
             let key = core.block_on(session.audio_key().request(track.id, *file_id)).expect("Cannot get audio key");
             let stopwatch = time::Instant::now();
-            let mut encrypted_file = core.block_on(AudioFile::open(&session, *file_id, 320, true)).unwrap();
+            let mut encrypted_file = core.block_on(AudioFile::open(&session, *file_id, 40, true)).unwrap();
             let mut buffer = Vec::new();
             let mut read_all: Result<usize> = Ok(0);
             threadpool.scoped(|scope|{
