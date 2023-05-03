@@ -27,7 +27,7 @@ The script `tag_ogg` in the source tree can be used to automatically add the tra
 Use `oggify` with the `tag_ogg` helper script as described above, then convert with ffmpeg:
 ```
 for ogg in *.ogg; do
-	ffmpeg -i "$ogg" -map_metadata 0:s:0 -id3v2_version 3 -codec:a libmp3lame -qscale:a 2 "$(basename "$ogg" .ogg).mp3"
+	ffmpeg -i "$ogg" -map_metadata 0:s:0 -id3v2_version 3 -codec:a libmp3lame -b:a 320k "$(basename "$ogg" .ogg).mp3"
 done
 ```
 
