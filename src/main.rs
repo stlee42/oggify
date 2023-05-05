@@ -127,6 +127,15 @@ fn main() {
             let stopwatch = time::Instant::now();
             threadpool.scoped(|scope|{
                 scope.execute(||{
+                    // TODO: For librespot v0.5.0 update, we'll have to check that the
+                    //       download didn't timeout with incomplete download by check-
+                    //       ing the size of the buffer with expected file size.
+                    //       As of v0.4.2, timeout is infinite, so it hangs rather than
+                    //       returning incomplete data.
+                    //       I suggest encrypted_file.seek(SeekFrom::Start(0));
+                    //                 buffer.clear();
+                    //                 read_all = encrypted_file.read_to_end(&mut buffer);
+                    //       over and over again until it works.
                     read_all = encrypted_file.read_to_end(&mut buffer);
                 });
             });
