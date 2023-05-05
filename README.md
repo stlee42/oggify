@@ -21,10 +21,10 @@ In this form `helper_script` is invoked for each new track:
 ```
 helper_script "spotify_id" "title" "album" "artist1" ["artist2"...] < ogg_stream
 ```
-The script `tag_ogg` in the source tree can be used to automatically add the track information (spotify ID, title, album, artists) as vorbis comments.
+The script `./tag_ogg` in the source tree can be used to automatically add the track information (spotify ID, title, album, artists) as vorbis comments.
 
 ### Converting to MP3
-Use `oggify` with the `tag_ogg` helper script as described above, then convert with ffmpeg:
+Use `oggify` with the `./tag_ogg` helper script as described above, then convert with ffmpeg:
 ```
 for ogg in *.ogg; do
 	ffmpeg -i "$ogg" -map_metadata 0:s:0 -id3v2_version 3 -codec:a libmp3lame -b:a 320k "$(basename "$ogg" .ogg).mp3"
