@@ -65,13 +65,11 @@ fn main() {
                 info!("{} - is already downloaded", fname);
                 return;
             }
-
-            let mut track = core.block_on(Track::get(&session, id)).expect("Cannot get track metadata");
+            /*
             let artists_strs: Vec<_> = track.artists.iter().map(|id|core.block_on(Artist::get(&session, *id)).expect("Cannot get artist metadata").name).collect();
             let album = core.block_on(Album::get(&session, track.album)).expect("Cannot get album metadata");
             let track_name = track.name.to_string();
 
-            /*
             // from
             // https://stackoverflow.com/questions/38461429/how-can-i-truncate-a-string-to-have-at-most-n-characters
             let max_width = 255-4;
@@ -89,7 +87,12 @@ fn main() {
             */
 
 
-            if !track.available {
+            let track = core.block_on(Track::get(&session, id)).expect("Cannot get track metadata");
+            let track_to_dl;
+
+            if track.available {
+                track_to_dl = track.clone();
+            } else {
                 warn!("Track {} is not available, finding alternative...", id.to_base62().expect("UTF8 error"));
                 let alt_track = track.alternatives.iter().find_map(|id|{
                     let alt_track = core.block_on(Track::get(&session, *id)).expect("Cannot get track metadata");
@@ -107,7 +110,7 @@ fn main() {
                 match alt_track {
                     Some(alt_track) => {
                         warn!("Found track alternative {} -> {}", id.to_base62().expect("UTF8 error"), alt_track.id.to_base62().expect("UTF8 error"));
-                        track = alt_track;
+                        track_to_dl = alt_track;
                     }
                     None => {
                         warn!("Could not find alternative for track {}", id.to_base62().expect("UTF8 error"));
@@ -117,12 +120,13 @@ fn main() {
             }
 
 
-            debug!("File formats: {}", track.files.keys().map(|filetype|format!("{:?}", filetype)).collect::<Vec<_>>().join(" "));
-            let file_id = track.files.get(&FileFormat::OGG_VORBIS_320)
-                .or(track.files.get(&FileFormat::OGG_VORBIS_160))
-                .or(track.files.get(&FileFormat::OGG_VORBIS_96))
+
+            debug!("File formats: {}", track_to_dl.files.keys().map(|filetype|format!("{:?}", filetype)).collect::<Vec<_>>().join(" "));
+            let file_id = track_to_dl.files.get(&FileFormat::OGG_VORBIS_320)
+                .or(track_to_dl.files.get(&FileFormat::OGG_VORBIS_160))
+                .or(track_to_dl.files.get(&FileFormat::OGG_VORBIS_96))
                 .expect("Could not find a OGG_VORBIS format for the track.");
-            let key = core.block_on(session.audio_key().request(track.id, *file_id)).expect("Cannot get audio key");
+            let key = core.block_on(session.audio_key().request(track_to_dl.id, *file_id)).expect("Cannot get audio key");
             let mut encrypted_file = core.block_on(AudioFile::open(&session, *file_id, 40, true)).unwrap();
             let mut buffer = Vec::new();
             let mut read_all: Result<usize> = Ok(0);
@@ -148,16 +152,18 @@ fn main() {
                 std::fs::write(&fname, &decrypted_buffer[0xa7..]).expect("Cannot write decrypted track");
                 info!("Filename: {}", fname);
             } else {
+                let artists_strs: Vec<_> = track.artists.iter().map(|id|core.block_on(Artist::get(&session, *id)).expect("Cannot get artist metadata").name).collect();
+                let album = core.block_on(Album::get(&session, track.album)).expect("Cannot get album metadata");
                 let mut cmd = Command::new(args[3].to_owned());
                 cmd.stdin(Stdio::piped());
-                cmd.arg(id.to_base62().expect("UTF8 error")).arg(track_name).arg(album.name).args(artists_strs.iter());
+                cmd.arg(id.to_base62().expect("UTF8 error")).arg(track.name).arg(album.name).args(artists_strs.iter());
                 let mut child = cmd.spawn().expect("Could not run helper program");
                 let pipe = child.stdin.as_mut().expect("Could not open helper stdin");
                 pipe.write_all(&decrypted_buffer[0xa7..]).expect("Failed to write to stdin");
                 assert!(child.wait().expect("Out of ideas for error messages").success(), "Helper script returned an error");
             }
 
-            let track_length = time::Duration::from_millis(track.duration.try_into().unwrap());
+            let track_length = time::Duration::from_millis(track_to_dl.duration.try_into().unwrap());
             let sleep_for = track_length.saturating_sub(stopwatch.elapsed());
 
             if !sleep_for.is_zero() {
