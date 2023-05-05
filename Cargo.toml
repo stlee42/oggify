@@ -10,7 +10,7 @@ repository = "https://github.com/pisto/oggify"
 readme = "README.md"
 
 [dependencies]
-tokio = { version = "1", features = ["rt","rt-multi-thread", "macros", "signal", "sync", "parking_lot", "process"] }
+tokio = { version = "1", features = ["rt-multi-thread"] }
 librespot-core = "0.4.2"
 librespot-metadata = "0.4.2"
 librespot-audio = "0.4.2"
